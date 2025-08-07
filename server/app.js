@@ -33,10 +33,10 @@ app.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const user = await User.create({ email, password });
+    const user = await User.create({ email, password, role: 'user' });
 
     const token = jwt.sign(
-      { userId: user.id },
+      { userId: user.id, role: user.role },
       JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -70,7 +70,7 @@ app.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user.id },
+      { userId: user.id, role: user.role },
       JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -101,6 +101,13 @@ const authenticateToken = (req, res, next) => {
     req.user = user;
     next();
   });
+};
+
+const requireAdmin = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Access denied: admin only' });
+  }
+  next();
 };
 
 // Task endpoints
@@ -164,6 +171,46 @@ app.delete('/task/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Task deleted successfully' });
   } catch (err) {
     console.error('Error deleting task:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin dashboard endpoint
+app.get('/admin/dashboard', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const users = await db.User.findAll({
+      attributes: ['id', 'email', 'role']
+    });
+
+    const tasks = await db.Task.findAll();
+
+    res.json({ users, tasks });
+  } catch (err) {
+    console.error('Error in admin dashboard:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.delete('/admin/user/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    if (parseInt(userId) === req.user.userId) {
+      return res.status(400).json({ message: 'Admins cannot delete themselves' });
+    }
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await db.Task.destroy({ where: { userId } });
+
+    await user.destroy();
+
+    res.json({ message: 'User and their tasks deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting user:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
