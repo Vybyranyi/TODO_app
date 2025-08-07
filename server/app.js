@@ -117,14 +117,24 @@ app.get('/tasks', authenticateToken, async (req, res) => {
 });
 
 app.post('/task', authenticateToken, async (req, res) => {
-  const { title, description, status } = req.body;
-  const task = await db.Task.create({
-    userId: req.user.userId,
-    title,
-    description,
-    status,
-  });
-  res.status(201).json(task);
+  try {
+    const { title, description, status } = req.body;
+    
+    if (!title || !status) {
+      return res.status(400).json({ message: 'Title and status are required' });
+    }
+
+    const task = await db.Task.create({
+      userId: req.user.userId,
+      title,
+      description,
+      status,
+    });
+    res.status(201).json(task);
+  } catch (err) {
+    console.error('Error creating task:', err); 
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 
