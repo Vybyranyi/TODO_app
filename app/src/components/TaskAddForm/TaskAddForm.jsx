@@ -1,27 +1,44 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { createTask } from '../../store/TasksSlice';
-import { Form, Input, Button } from 'antd';
+import { createTask, updateTask } from '../../store/TasksSlice';
+import { Form, Input, Button, Select, Space } from 'antd';
+const { Option } = Select;
 
-export default function TaskAddForm() {
+export default function TaskAddForm({ editingTask, onCancelEdit }) {
   const dispatch = useDispatch();
-
   const [form] = Form.useForm();
 
-  const handleSubmit = (values) => {
-    const task = {
-      title: values.title,
-      description: values.description,
-      status: 'todo',
-    };
-
-    dispatch(createTask(task)).then(() => {
+  useEffect(() => {
+    if (editingTask) {
+      form.setFieldsValue({
+        title: editingTask.title,
+        description: editingTask.description,
+        status: editingTask.status,
+      });
+    } else {
       form.resetFields();
-    });
+    }
+  }, [editingTask, form]);
+
+  const handleSubmit = (values) => {
+    if (editingTask) {
+      dispatch(updateTask({ id: editingTask.id, updates: values })).then(() => {
+        onCancelEdit();
+      });
+    } else {
+      const task = {
+        ...values,
+        status: values.status || 'todo',
+      };
+      dispatch(createTask(task)).then(() => {
+        form.resetFields();
+      });
+    }
   };
 
   return (
     <Form layout="vertical" onFinish={handleSubmit} form={form}>
+      <h3>{editingTask ? 'Edit Task' : 'Add New Task'}</h3>
       <Form.Item
         name="title"
         label="Title"
@@ -34,11 +51,14 @@ export default function TaskAddForm() {
         <Input.TextArea placeholder="Enter task description" rows={4} />
       </Form.Item>
 
-      <Form.Item>
+      <Space>
         <Button type="primary" htmlType="submit">
-          Add Task
+          {editingTask ? 'Save Changes' : 'Add Task'}
         </Button>
-      </Form.Item>
+        {editingTask && ( 
+          <Button onClick={onCancelEdit}>Cancel</Button>
+        )}
+      </Space>
     </Form>
   );
 }
