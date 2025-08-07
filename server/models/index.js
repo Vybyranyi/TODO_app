@@ -1,14 +1,18 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../config/db');
+import Sequelize from 'sequelize';
+import sequelize from '../config/db.js';
+import defineUser from './User.js';
+import defineTask from './Task.js';
 
 const db = {};
+
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.User = require('./User')(sequelize, Sequelize.DataTypes);
-db.Task = require('./Task')(sequelize, Sequelize.DataTypes);
+db.User = defineUser(sequelize, Sequelize.DataTypes);
+db.Task = defineTask(sequelize, Sequelize.DataTypes);
 
-db.User.associate(db);
-db.Task.associate(db);
+Object.values(db).forEach((model) => {
+  if (model.associate) model.associate(db);
+});
 
-module.exports = db;
+export default db;

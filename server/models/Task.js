@@ -1,8 +1,8 @@
-module.exports = (sequelize, DataTypes) => {
+const defineTask = (sequelize, DataTypes) => {
   const Task = sequelize.define('Task', {
     id: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4, // Унікальний ідентифікатор
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     title: {
@@ -16,7 +16,6 @@ module.exports = (sequelize, DataTypes) => {
     status: {
       type: DataTypes.ENUM('todo', 'in_progress', 'done'),
       defaultValue: 'todo',
-      allowNull: false,
     },
   });
 
@@ -29,3 +28,5 @@ module.exports = (sequelize, DataTypes) => {
 
   return Task;
 };
+
+export default defineTask;

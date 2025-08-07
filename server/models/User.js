@@ -1,6 +1,6 @@
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
 
-module.exports = (sequelize, DataTypes) => {
+const defineUser = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
     id: {
       type: DataTypes.UUID,
@@ -27,7 +27,10 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   User.associate = (models) => {
-    User.hasMany(models.Task, { foreignKey: 'userId', onDelete: 'CASCADE' });
+    User.hasMany(models.Task, {
+      foreignKey: 'userId',
+      onDelete: 'CASCADE',
+    });
   };
 
   User.prototype.validatePassword = async function (password) {
@@ -36,3 +39,5 @@ module.exports = (sequelize, DataTypes) => {
 
   return User;
 };
+
+export default defineUser;
