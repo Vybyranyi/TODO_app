@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import AuthReducer from './store/AuthSlice';
 import TasksReducer from './store/TasksSlice';
+import adminReducer from './store/AdminSlice';
 import { BrowserRouter } from 'react-router-dom';
 
 
@@ -12,6 +13,7 @@ const store = configureStore({
   reducer: {
     auth: AuthReducer,
     tasks: TasksReducer,
+    admin: adminReducer,
   }
 });
 

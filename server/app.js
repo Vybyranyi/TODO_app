@@ -28,7 +28,7 @@ app.post('/register', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await db.User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
@@ -46,7 +46,8 @@ app.post('/register', async (req, res) => {
       token,
       user: {
         id: user.id,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     });
   } catch (err) {
@@ -80,7 +81,8 @@ app.post('/login', async (req, res) => {
       token,
       user: {
         id: user.id,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     });
   } catch (err) {
@@ -88,6 +90,7 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Помилка сервера' });
   }
 });
+
 
 // Middleware (authenticate)
 const authenticateToken = (req, res, next) => {

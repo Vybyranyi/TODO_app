@@ -25,10 +25,12 @@ if (initialToken && !tokenValid) {
 }
 
 const initialState = {
+  token: initialToken,
   isAuth: tokenValid,
-  token: tokenValid ? initialToken : '',
+  user: JSON.parse(localStorage.getItem('user')) || null,
+  status: 'idle',
   error: null,
-  loading: false
+  loading: false,
 };
 
 export const UserRegister = createAsyncThunk(
@@ -50,8 +52,10 @@ export const UserRegister = createAsyncThunk(
 
       if (rememberMe) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user)); 
       } else {
         sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem("user", JSON.stringify(data.user)); 
       }
 
       return data;
@@ -80,8 +84,10 @@ export const UserLogin = createAsyncThunk(
 
       if (rememberMe) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user)); 
       } else {
         sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem("user", JSON.stringify(data.user)); 
       }
 
       return data;
@@ -98,10 +104,13 @@ const AuthSlice = createSlice({
     logout(state) {
       state.isAuth = false;
       state.token = '';
+      state.user = null; 
       state.error = null;
       state.loading = false;
       localStorage.removeItem('token');
       sessionStorage.removeItem('token');
+      localStorage.removeItem('user'); 
+      sessionStorage.removeItem('user'); 
     },
     clearError(state) {
       state.error = null;
@@ -117,6 +126,7 @@ const AuthSlice = createSlice({
         state.loading = false;
         state.isAuth = true;
         state.token = action.payload.token;
+        state.user = action.payload.user; 
         state.error = null;
       })
       .addCase(UserRegister.rejected, (state, action) => {
@@ -132,6 +142,7 @@ const AuthSlice = createSlice({
         state.loading = false;
         state.isAuth = true;
         state.token = action.payload.token;
+        state.user = action.payload.user; 
         state.error = null;
       })
       .addCase(UserLogin.rejected, (state, action) => {
